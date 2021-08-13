@@ -1,0 +1,16 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Git Clone') {
+            steps {
+               git branch: 'main', credentialsId: 'Git', url: 'https://github.com/mfarhanSystemsltd/SimpleApp.git'
+            }
+        }
+         stage('ZIP all files') {
+            steps {
+              sh 'tar czf app.tar.gz server.js'
+            }
+        }
+    }
+}
