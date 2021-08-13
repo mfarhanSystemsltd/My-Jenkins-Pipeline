@@ -1,0 +1,60 @@
+pipeline {
+    agent any
+      parameters {
+            booleanParam(
+                defaultValue: false, 
+                description: '', 
+                name: 'Rollback'
+            )
+            string(
+                defaultValue: '', 
+                name: 'Branch', 
+                trim: true
+            )
+            string(
+                defaultValue: '', 
+                name: 'Rollbacktag', 
+                trim: true
+            )
+      }
+
+
+    stages {
+        stage('Clear directory'){
+            steps{
+                sh 'rm -rf'
+            }
+        }
+          stage('Checking rollback T/F'){
+              when {
+                expression { params.Rollback == true && !params.Rollbacktag.isEmpty() && params.Branch.isEmpty() }
+            }
+            steps {
+      
+                checkout([$class: 'GitSCM', branches: [[name: params.Rollbacktag]],
+                  userRemoteConfigs: [[url: 'https://github.com/mfarhanSystemsltd/TEST.git',credentialsId: 'Git']]
+                ])
+                }
+             }
+            
+        
+         stage('Branch check main'){
+              when {
+                expression { params.Branch == 'main' && params.Rollbacktag.isEmpty() }
+            }
+            steps {
+                git branch: 'main', credentialsId: 'Git', url: 'https://github.com/mfarhanSystemsltd/SimpleApp.git'
+            }
+        }
+          stage('Branch check farhan'){
+             when {
+                expression { params.Branch == 'farhan' && params.Rollbacktag.isEmpty() }
+            }
+            steps {
+                git branch: 'farhan', credentialsId: 'Git', url: 'https://github.com/mfarhanSystemsltd/SimpleApp.git'
+            }
+        }
+    }
+}
+
+
